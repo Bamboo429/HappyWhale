@@ -1,4 +1,4 @@
-name: digital-pathology
+name: happywhale
 channels:
   - pytorch
   - conda-forge
