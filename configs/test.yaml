@@ -1,0 +1,28 @@
+
+# Init yaml for HappyWhale
+General:
+    random_seed: 22
+    
+Data:
+    dataset:
+        data_directory: "./Data/train/"
+        data_name: "train.csv"        
+    dataloader:
+        batch_size: 6
+        num_workers: 4
+        epoch: 30
+        
+Aug:
+    hf: 0.5
+    
+    affine: 0.5
+    rotate: 10
+    translate: 0.5
+    shear: 10
+    
+    img_height: 1024
+    img_weight: 1024
+    
+    
+    
+        
