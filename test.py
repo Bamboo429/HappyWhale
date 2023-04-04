@@ -9,11 +9,12 @@ Created on Mon Mar 27 10:05:06 2023
 import os
 import pandas as pd
 import yaml
-from addict import Dict
 import cv2
 import matplotlib.pyplot as plt
 import albumentations as A
 
+from dataset import HappyWhaleDataset
+from torch.utils.data import DataLoader
 
 with open('./configs/test.yaml', 'r') as file:
    cfg = yaml.safe_load(file)    
@@ -31,7 +32,13 @@ image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 transform = A.HorizontalFlip(p=1)
 augmented_image = transform(image=image)['image']
-plt.imshow(augmented_image)
+
+
+
+training_data = HappyWhaleDataset(train_pd, "train", cfg)
+train_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
+train_img, train_labels = next(iter(train_dataloader))
+plt.imshow(train_img)
 
 #print(train_pd.columns)
 
