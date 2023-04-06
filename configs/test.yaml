@@ -5,7 +5,7 @@ General:
     
 Data:
     dataset:
-        data_directory: "./Data/train/"
+        data_directory: "/drives/hoyi1/users/ivyyen/CS7150_DL_FinalProject/HappyWhale_dataset_precropped/"
         data_name: "train.csv"        
     dataloader:
         batch_size: 6
