@@ -6,11 +6,12 @@ General:
 Data:
     dataset:
         data_directory: "/drives/hoyi1/users/ivyyen/CS7150_DL_FinalProject/HappyWhale_dataset_precropped/"
+
         data_name: "train.csv"        
     dataloader:
-        batch_size: 6
-        num_workers: 4
-        epoch: 30
+        batch_size: 32
+        num_workers: 1
+        
         
 Aug:
     hf: 0.5
@@ -22,6 +23,16 @@ Aug:
     
     img_height: 1024
     img_weight: 1024
+    
+Train:
+    model: "efficient-v2"
+    lr: 0.01
+    optimizar: "adam"
+    epoch: 30
+    loss: "focal loss"
+    k_fold: 5
+    
+
     
     
     
