@@ -19,6 +19,10 @@ import os
 from sklearn.model_selection import StratifiedGroupKFold
 import torch
 import random
+from pytorch_metric_learning import losses
+import numpy as np
+
+from trainer import get_model, train, evaluate
 
 # check GPU
 assert torch.cuda.is_available()
@@ -30,13 +34,15 @@ with open('./configs/test.yaml', 'r') as file:
    cfg = yaml.safe_load(file)   
  
 # random seed
-random_seed = cfg['General'['random_seed']]
+random_seed = cfg['General']['random_seed']
 random.seed(random_seed)
 
 # data prepare
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
-training_data = HappyWhaleDataset(train_pd, "train", cfg)
-train_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
+training_data = HappyWhaleDataset(train_pd, "train", cfg, transform=True)
+
+# test iter dataloader
+#train_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
 #train_img, train_labels = next(iter(train_dataloader))
 
 # cross validation
@@ -47,10 +53,12 @@ kfold = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=rando
 
 # hyperparameters setting
 batch_size = cfg['Data']['dataloader']['batch_size']
-epoch = cfg['Train']['epoch']
+epochs = cfg['Train']['epoch']
+lr = cfg['Train']['lr']
 
-
-for fold,(train_idx,test_idx) in enumerate(kfold.split(training_data)):
+X = train_pd['image']
+y = train_pd['individual_id']
+for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     
     print('------------fold no---------{}----------------------'.format(fold))
     train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
@@ -64,75 +72,19 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(training_data)):
                         batch_size=batch_size, sampler=valid_subsampler)
     
     # get model init
-    model = get_model()
+    model = get_model("baseline")
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    loss_func = losses.TripletMarginLoss()
     #model.apply(reset_weights)
      
     # train and validation
+    # train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip):
     for epoch in range(1, epochs + 1):
-        train(fold, model, device, trainloader, optimizer, epoch)
-        evaluate(fold,model, device, testloader)
+        train(model, trainloader, loss_func, device, optimizer, epoch, 1)
+        evaluate(model, device, validloader)
         
         # save training process
         # save model
     
     
 
-def train(model, dataloader, loss_func, device, grad_norm_clip):
-    model.train()
-    total_acc, total_count = 0, 0
-    log_interval = 500
-    start_time = time.time()
-
-    for idx, (label, text) in enumerate(dataloader):
-        label = label.to(device)
-        text = text.to(device)
-        optimizer.zero_grad()
-        
-        logits = None
-        
-        ###########################################################################
-        # TODO: compute the logits of the input, get the loss, and do the         #
-        # gradient backpropagation.
-        ###########################################################################
-        logits = model(text)
-        loss = loss_func(logits, label)
-        loss.backward()
-        #raise NotImplementedError
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
-        
-        torch.nn.utils.clip_grad_norm_(model.parameters(), grad_norm_clip)
-        optimizer.step()
-        total_acc += (logits.argmax(1) == label).sum().item()
-        total_count += label.size(0)
-        if idx % log_interval == 0 and idx > 0:
-            elapsed = time.time() - start_time
-            print('| epoch {:3d} | {:5d}/{:5d} batches '
-                  '| accuracy {:8.3f}'.format(epoch, idx, len(dataloader),
-                                              total_acc/total_count))
-            total_acc, total_count = 0, 0
-            start_time = time.time()
-
-def evaluate(model, dataloader, loss_func, device):
-    model.eval()
-    total_acc, total_count = 0, 0
-
-    with torch.no_grad():
-        for idx, (label, text) in enumerate(dataloader):
-            label = label.to(device)
-            text = text.to(device)
-            
-            
-            ###########################################################################
-            # TODO: compute the logits of the input, get the loss.                    #
-            ###########################################################################
-            logits = model(text)
-            #raise NotImplementedError
-            ###########################################################################
-            #                             END OF YOUR CODE                            #
-            ###########################################################################
-            
-            total_acc += (logits.argmax(1) == label).sum().item()
-            total_count += label.size(0)
-    return total_acc/total_count

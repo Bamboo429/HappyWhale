@@ -13,7 +13,7 @@ from torch.utils.data import Dataset, DataLoader
 import cv2
 import matplotlib.pyplot as plt
 import albumentations as A
-
+from sklearn import preprocessing
 
 class HappyWhaleDataset(Dataset):
     
@@ -21,15 +21,18 @@ class HappyWhaleDataset(Dataset):
         
         assert phase in {"train", "test"}
         
-        self.df = df_file
+        #self.df = df_file
+        self.df = df_output_encoder(df_file)
         self.transform = transform
         self.image_folder = cfg['Data']['dataset']['data_directory']
-        self.cfg = cfg   
+        self.cfg = cfg  
+        self.phase = phase
      
     def get_image(self, index):
         
         image_name = self.df['image'].values[index]
         image_path = os.path.join(os.getcwd(), self.image_folder, image_name)
+        #print(image_path)
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
@@ -74,6 +77,7 @@ class HappyWhaleDataset(Dataset):
         image = self.get_image(index)
         label_id, label_species = self.get_label(index)
         
+        
         if self.transform:
             image = self.data_augmentation(image)
         
@@ -81,6 +85,43 @@ class HappyWhaleDataset(Dataset):
         
     def __len__(self):
         return  len(self.df)
+    
+    
+
+def df_output_encoder(df):
+    """
+    do the output encoder by label encoder or one-hot encoder
+
+    Parameters
+    ----------
+    df : dataframe
+        DESCRIPTION.
+
+    Returns
+    -------
+    df : dataframe with output encoder
+
+    """
+    
+    # ==== label encoder ====
+    label_id = df['individual_id']
+    labelencoder = preprocessing.LabelEncoder()
+    labelencoder.fit(label_id)
+    encoder = labelencoder.transform(label_id) 
+    
+    
+    # ==== one-hot encoder ====
+    #onehotencoder = preprocessing.OneHotEncoder()
+    #onehotencoder.fit(label_id)
+    #output = onehotencoder.transform(label_id) 
+    
+    df['individual_id'] = encoder
+    
+    return df
+    
+    
+    
+    
         
         
         
