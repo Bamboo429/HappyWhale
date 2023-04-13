@@ -73,6 +73,7 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     
     # get model init
     model = get_model("baseline")
+    model = model.to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     loss_func = losses.TripletMarginLoss()
     #model.apply(reset_weights)

@@ -21,7 +21,7 @@ class CNN_Baseline(nn.Module):
     
         self.conv1 = nn.Conv2d(in_channels, hidden_dim, (6,6))
         self.relu1 = nn.ReLU()
-        self.batch1 = nn.BatchNorm2d(num_features=3)
+        self.batch1 = nn.BatchNorm2d(num_features=20)
         self.pooling1 = nn.MaxPool2d(kernel_size=(2,2))
         
         self.conv2 = nn.Conv2d(hidden_dim, hidden_dim, (3,3))
@@ -29,7 +29,7 @@ class CNN_Baseline(nn.Module):
         self.pooling2 = nn.AvgPool2d(kernel_size=(3,3))
         
         self.flatten = nn.Flatten()
-        self.fc = nn.Linear(576, 512)
+        self.fc = nn.Linear(180, 512)
         self.dropout = nn.Dropout()
         self.out = nn.Linear(512, out_channels)
         

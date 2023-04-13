@@ -14,6 +14,8 @@ import cv2
 import matplotlib.pyplot as plt
 import albumentations as A
 from sklearn import preprocessing
+from albumentations.pytorch import ToTensorV2
+
 
 class HappyWhaleDataset(Dataset):
     
@@ -21,7 +23,8 @@ class HappyWhaleDataset(Dataset):
         
         assert phase in {"train", "test"}
         
-        #self.df = df_file
+        #self.df = df_file,     
+        
         self.df = df_output_encoder(df_file)
         self.transform = transform
         self.image_folder = cfg['Data']['dataset']['data_directory']
@@ -54,6 +57,8 @@ class HappyWhaleDataset(Dataset):
         
         # define aug 
         transform = A.Compose([
+            
+            # augmentation
             A.HorizontalFlip( p = aug_para['hf']),
             A.Affine(
                 rotate=(-aug_para['rotate'], aug_para['rotate']),
@@ -63,7 +68,13 @@ class HappyWhaleDataset(Dataset):
                 p=aug_para['affine'],
             ),
             
-            A.Resize(aug_para['img_height'], aug_para['img_weight'])
+            A.Resize(aug_para['img_height'], aug_para['img_weight']),    
+            
+            
+            # to tensor
+            A.Normalize(),
+            A.pytorch.transforms.ToTensorV2()
+           
         ])
         
         #random.seed()
@@ -90,7 +101,7 @@ class HappyWhaleDataset(Dataset):
 
 def df_output_encoder(df):
     """
-    do the output encoder by label encoder or one-hot encoder
+    convert indiidual id to label encoder or one-hot encoder
 
     Parameters
     ----------

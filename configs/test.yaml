@@ -21,8 +21,8 @@ Aug:
     translate: 0.5
     shear: 10
     
-    img_height: 1024
-    img_weight: 1024
+    img_height: 32
+    img_weight: 32
     
 Train:
     model: "efficient-v2"

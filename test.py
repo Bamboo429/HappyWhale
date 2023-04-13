@@ -35,12 +35,13 @@ transform = A.HorizontalFlip(p=1)
 augmented_image = transform(image=image)['image']
 
 
-training_data = HappyWhaleDataset(train_pd, "train", cfg)
+training_data = HappyWhaleDataset(train_pd, "train", cfg, transform=True)
 train_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
 train_img, train_labels = next(iter(train_dataloader))
 B,H,W,C = train_img.shape
 plt.imshow(train_img.reshape(H,W,C))
 
+img = train_img.numpy()
 
 #print(train_pd.columns)
 

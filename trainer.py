@@ -48,7 +48,7 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
     start_time = time.time()
 
     for idx, (img, label) in enumerate(dataloader):
-        print(label)
+        #print(label)
         label = label.to(device)
         img = img.to(device)
         optimizer.zero_grad()
