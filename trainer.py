@@ -79,7 +79,7 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
             total_acc, total_count = 0, 0
             start_time = time.time()
 
-def evaluate(model, dataloader, loss_func, device):
+def evaluate(model, dataloader, device):
     model.eval()
     total_acc, total_count = 0, 0
 

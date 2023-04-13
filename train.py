@@ -56,8 +56,10 @@ batch_size = cfg['Data']['dataloader']['batch_size']
 epochs = cfg['Train']['epoch']
 lr = cfg['Train']['lr']
 
+# for cross validation
 X = train_pd['image']
 y = train_pd['individual_id']
+
 for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     
     print('------------fold no---------{}----------------------'.format(fold))
@@ -76,13 +78,12 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     model = model.to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     loss_func = losses.TripletMarginLoss()
-    #model.apply(reset_weights)
+
      
     # train and validation
-    # train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip):
     for epoch in range(1, epochs + 1):
         train(model, trainloader, loss_func, device, optimizer, epoch, 1)
-        evaluate(model, device, validloader)
+        evaluate(model, validloader, device)
         
         # save training process
         # save model
