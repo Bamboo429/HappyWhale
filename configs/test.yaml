@@ -29,7 +29,7 @@ Train:
     lr: 0.01
     optimizar: "adam"
     epoch: 30
-    loss: "focal loss"
+    loss_func: "arcface loss"      
     k_fold: 5
     
 

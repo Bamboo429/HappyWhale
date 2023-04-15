@@ -25,7 +25,7 @@ class HappyWhaleDataset(Dataset):
         
         #self.df = df_file,     
         
-        self.df = df_output_encoder(df_file)
+        self.df = df_file
         self.transform = transform
         self.image_folder = cfg['Data']['dataset']['data_directory']
         self.cfg = cfg  
@@ -89,7 +89,7 @@ class HappyWhaleDataset(Dataset):
         label_id, label_species = self.get_label(index)
         
         
-        if self.transform:
+        if self.transform and self.phase == 'train':
             image = self.data_augmentation(image)
         
         return image, label_id
@@ -118,15 +118,28 @@ def df_output_encoder(df):
     label_id = df['individual_id']
     labelencoder = preprocessing.LabelEncoder()
     labelencoder.fit(label_id)
-    encoder = labelencoder.transform(label_id) 
+    label_encoder = labelencoder.transform(label_id) 
+    label_num = len(labelencoder.classes_)
     
+    # https://www.kaggle.com/competitions/happy-whale-and-dolphin/discussion/305574
+    df.species.replace({"globis": "short_finned_pilot_whale",
+                          "pilot_whale": "short_finned_pilot_whale",
+                          "kiler_whale": "killer_whale",
+                          "bottlenose_dolpin": "bottlenose_dolphin"}, inplace=True)
+
+    species = df['species'] 
+    labelencoder_species = preprocessing.LabelEncoder()
+    labelencoder_species.fit(species)
+    species_encoder = labelencoder_species.transform(species) 
+    spcies_num = len(labelencoder_species.classes_)
     
     # ==== one-hot encoder ====
     #onehotencoder = preprocessing.OneHotEncoder()
     #onehotencoder.fit(label_id)
     #output = onehotencoder.transform(label_id) 
     
-    df['individual_id'] = encoder
+    df['individual_id'] = label_encoder
+    df['species'] = species_encoder
     
     return df
     

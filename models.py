@@ -51,6 +51,10 @@ class CNN_Baseline(nn.Module):
         out = self.out(out)
         
         return out
+    
+    
+#class EfficientNet(nn.Module):
+    
         
         
         

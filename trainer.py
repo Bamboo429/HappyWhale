@@ -10,10 +10,11 @@ import time
 import torch
 import torch.nn as nn
 import models
+from pytorch_metric_learning import losses
 
 from models import CNN_Baseline
 
-def get_model(model_name)->nn.Module:
+def get_model(model_name, output_class=15587)->nn.Module:
     """
     Parameters
     ----------
@@ -29,7 +30,7 @@ def get_model(model_name)->nn.Module:
     """
     
     if model_name == 'baseline':
-        model = CNN_Baseline(3, 51033, 2)
+        model = CNN_Baseline(3, output_class, 2)
     #elif model_name == 'efficient':
     #    model = EfficientNet()
         
@@ -39,12 +40,26 @@ def get_model(model_name)->nn.Module:
     
     return model
 
+def get_loss_func(loss_name, cfg):
+    
+    if loss_name == 'cross_entropy':       
+        loss_func = nn.CrossEntropyLoss()
+        
+    elif loss_name == 'arcface':
+        num_classes = 10000
+        embedding_size = 1000
+        #losses.ArcFaceLoss(num_classes, embedding_size, margin=28.6, scale=64, **kwargs)
+        loss_func = losses.ArcFaceLoss(num_classes, embedding_size)
+    else:
+        print('no loss function defined')
+            
+    
 
 
 def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip):
     model.train()
     total_acc, total_count = 0, 0
-    log_interval = 500
+    log_interval = 100
     start_time = time.time()
 
     for idx, (img, label) in enumerate(dataloader):
@@ -84,15 +99,15 @@ def evaluate(model, dataloader, device):
     total_acc, total_count = 0, 0
 
     with torch.no_grad():
-        for idx, (label, text) in enumerate(dataloader):
+        for idx, (img, label) in enumerate(dataloader):
             label = label.to(device)
-            text = text.to(device)
+            img = img.to(device)
             
             
             ###########################################################################
             # TODO: compute the logits of the input, get the loss.                    #
             ###########################################################################
-            logits = model(text)
+            logits = model(img)
             #raise NotImplementedError
             ###########################################################################
             #                             END OF YOUR CODE                            #
@@ -100,6 +115,8 @@ def evaluate(model, dataloader, device):
             
             total_acc += (logits.argmax(1) == label).sum().item()
             total_count += label.size(0)
+            #print(label)
+            #print(label.size(0))
     return total_acc/total_count
     
     

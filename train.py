@@ -7,22 +7,25 @@ Created on Fri Mar 31 10:12:53 2023
 """
 
 # TODO !! rewrite to pytorch lighting version
+CUDA_LAUNCH_BLOCKING=1
 
-
-import yaml
-import time
+import yaml 
 from torch.utils.tensorboard import SummaryWriter
 from dataset import HappyWhaleDataset
 from torch.utils.data import DataLoader
 import pandas as pd
 import os
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedGroupKFold, KFold
 import torch
 import random
 from pytorch_metric_learning import losses
 import numpy as np
+import torch.nn as nn
+
 
 from trainer import get_model, train, evaluate
+from dataset import df_output_encoder
+
 
 # check GPU
 assert torch.cuda.is_available()
@@ -39,15 +42,17 @@ random.seed(random_seed)
 
 # data prepare
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
+train_pd = df_output_encoder(train_pd)
 training_data = HappyWhaleDataset(train_pd, "train", cfg, transform=True)
+#train_pd = train_pd[0:200]
 
-# test iter dataloader
-#train_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
-#train_img, train_labels = next(iter(train_dataloader))
+# output number
+id_class_num = len(pd.unique(train_pd['individual_id']))
+species_class_num = len(pd.unique(train_pd['species']))                             
 
 # cross validation
 n_splits = cfg['Train']['k_fold']
-kfold = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=random_seed)
+kfold = KFold(n_splits=n_splits, shuffle=True, random_state=random_seed)
 
 # === training ====
 
@@ -76,8 +81,10 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     # get model init
     model = get_model("baseline")
     model = model.to(device)
+    
+    # !!! TODO: write in yaml (after) !!!
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    loss_func = losses.TripletMarginLoss()
+    loss_func = nn.CrossEntropyLoss() #losses.TripletMarginLoss()
 
      
     # train and validation
