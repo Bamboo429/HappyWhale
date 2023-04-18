@@ -9,6 +9,7 @@ Created on Wed Apr 12 10:51:01 2023
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import timm
 
 class CNN_Baseline(nn.Module):
     
@@ -53,21 +54,39 @@ class CNN_Baseline(nn.Module):
         return out
     
     
-#class EfficientNet(nn.Module):
+class EfficientNet(nn.Module):
+    def __init__(self, model_name, out_channels, embedding_size=1000):
+        super().__init__()
+        self.embedding = timm.create_model(model_name, pretrained=True)
+        in_features = self.embedding.classifier.in_features
+        self.embedding.classifier = nn.Identity()
+        self.embedding.global_pool = nn.Identity()
+        
+        self.pooling = GeM()
+        self.dense = nn.Linear(in_features, embedding_size) 
+        self.dropout = nn.Dropout()
+        
+    def forward(self, img):
+        
+        embedding = self.embedding(img)
+        out = self.pooling(embedding).flatten(1)
+        out = self.dropout(out)
+        out = self.dense(out)
+        return F.normalize(out)
     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     
+class GeM(nn.Module):
+    def __init__(self, p=3, eps=1e-6):
+        super(GeM, self).__init__()
+        self.p = nn.Parameter(torch.ones(1)*p)
+        self.eps = eps
 
-    
+    def forward(self, x):
+        return self.gem(x, p=self.p, eps=self.eps)
+        
+    def gem(self, x, p=3, eps=1e-6):
+        return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
+        
+        
+        
+        

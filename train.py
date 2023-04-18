@@ -23,7 +23,7 @@ import numpy as np
 import torch.nn as nn
 
 
-from trainer import get_model, train, evaluate
+from trainer import get_model, train, evaluate, metric_train
 from dataset import df_output_encoder
 
 
@@ -31,20 +31,25 @@ from dataset import df_output_encoder
 assert torch.cuda.is_available()
 # device = 'cuda'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# empty memory avoid out-of-memory
+torch.cuda.empty_cache()
 # open configure file
-with open('./configs/test.yaml', 'r') as file:
+cfg_filename = 'test'
+with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)   
  
+# tensorboard saving
+writer = SummaryWriter('runs/' + cfg_filename)
+
 # random seed
 random_seed = cfg['General']['random_seed']
-random.seed(random_seed)
+#random.seed(random_seed)
 
 # data prepare
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
 train_pd = df_output_encoder(train_pd)
 training_data = HappyWhaleDataset(train_pd, "train", cfg, transform=True)
-#train_pd = train_pd[0:200]
+train_pd = train_pd[0:200]
 
 # output number
 id_class_num = len(pd.unique(train_pd['individual_id']))
@@ -79,20 +84,27 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
                         batch_size=batch_size, sampler=valid_subsampler)
     
     # get model init
-    model = get_model("baseline")
+    model = get_model("efficient", species_class_num)
     model = model.to(device)
     
     # !!! TODO: write in yaml (after) !!!
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
-    loss_func = nn.CrossEntropyLoss() #losses.TripletMarginLoss()
-
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)   
+    loss_func = nn.CrossEntropyLoss() #
+    #loss_func = losses.ArcFaceLoss(id_class_num, 2000, margin=0.05, scale = 20) #
      
     # train and validation
     for epoch in range(1, epochs + 1):
-        train(model, trainloader, loss_func, device, optimizer, epoch, 1)
-        evaluate(model, validloader, device)
+        train_acc, train_loss = train(model, trainloader, loss_func, device, optimizer, epoch, 1)
         
-        # save training process
+        val_acc = evaluate(model, validloader, device)
+        print(f"valudation accuarcy : {val_acc}")    
+        # save training process     
+        writer.add_scalar('Loss/train', train_loss, epoch)
+        writer.add_scalar('Loss/test', np.random.random(), epoch)
+        writer.add_scalar('Accuracy/train', train_acc, epoch)
+        writer.add_scalar('Accuracy/test', val_acc, epoch)
+        
         # save model
     
     

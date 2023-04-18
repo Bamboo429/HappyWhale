@@ -56,7 +56,7 @@ class HappyWhaleDataset(Dataset):
         aug_para = self.cfg['Aug']
         
         # define aug 
-        transform = A.Compose([
+        transform_train = A.Compose([
             
             # augmentation
             A.HorizontalFlip( p = aug_para['hf']),
@@ -68,6 +68,10 @@ class HappyWhaleDataset(Dataset):
                 p=aug_para['affine'],
             ),
             
+            A.ToGray(p=0.1),
+            A.GaussianBlur(blur_limit=(3, 7), p=0.05),
+            A.GaussNoise(p=0.05),
+                
             A.Resize(aug_para['img_height'], aug_para['img_weight']),    
             
             
@@ -77,9 +81,16 @@ class HappyWhaleDataset(Dataset):
            
         ])
         
-        #random.seed()
+        trainfrom_eval = A.Compose([
+            A.Normalize(),
+            A.pytorch.transforms.ToTensorV2()
+            ])
         
-        augmented_image = transform(image=image)['image']
+        #random.seed()
+        if self.phase == 'train':
+            augmented_image = transform_train(image=image)['image']
+        else:
+            augmented_image = trainfrom_eval(image=image)['image']
         
         return augmented_image
         
@@ -92,7 +103,10 @@ class HappyWhaleDataset(Dataset):
         if self.transform and self.phase == 'train':
             image = self.data_augmentation(image)
         
-        return image, label_id
+            
+        
+        
+        return image, label_species
         
     def __len__(self):
         return  len(self.df)

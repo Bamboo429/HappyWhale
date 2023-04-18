@@ -45,3 +45,5 @@ img = train_img.numpy()
 
 #print(train_pd.columns)
 
+
+
