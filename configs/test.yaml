@@ -7,9 +7,9 @@ Data:
     dataset:
         data_directory: "/drives/hoyi1/users/ivyyen/CS7150_DL_FinalProject/HappyWhale_dataset_precropped/train/"
 
-        data_name: "train.csv"        
+        data_name: "train_with_split.csv"        
     dataloader:
-        batch_size: 64
+        batch_size: 4
         num_workers: 1
         
         
@@ -25,12 +25,12 @@ Aug:
     img_weight: 380
     
 Train:
-    model: "efficient-v2"
-    embedding_size: 1000
+    model: "efficient-b0"
+    embedding_size: 2000
     lr: 0.0001
     optimizar: "adam"
-    epoch: 30
-    loss_func: "arcface loss"      
+    epoch: 2
+    loss_func: "cross entropy"      
     k_fold: 5
     
 

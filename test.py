@@ -17,12 +17,18 @@ from dataset import HappyWhaleDataset
 from torch.utils.data import DataLoader
 from pytorch_metric_learning import losses 
 
+
+from torchvision.models.feature_extraction import get_graph_node_names
+from torchvision.models.feature_extraction import create_feature_extractor
+
 with open('./configs/test.yaml', 'r') as file:
    cfg = yaml.safe_load(file)    
      
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
 image_folder = cfg['Data']['dataset']['data_directory']
 
+train_df = train_pd[train_pd['train_test'] == 'train'].reset_index(drop=True)
+test_df = train_pd[train_pd['train_test'] == 'test'].reset_index(drop=True)
 #path = '/Users/chuhsuanlin/Documents/NEU/Course/Spring 2023/CS 7150 - Deep Learning/Final/HappyWhale/Data/train/123.jpg'
 
 image_name = train_pd['image'].values[0]
@@ -44,6 +50,7 @@ plt.imshow(train_img.reshape(H,W,C))
 img = train_img.numpy()
 
 #print(train_pd.columns)
+
 
 
 

@@ -14,20 +14,19 @@ from pytorch_metric_learning import losses, miners
 import timm
 from torchsummary import summary
 
-from models import CNN_Baseline, EfficientNet
+from models import CNN_Baseline, EfficientNet, EfficientArcMargin
 
 def get_model(model_name, output_class=15587)->nn.Module:
     """
     Parameters
     ----------
     model_name : string
-        DESCRIPTION.
-     : TYPE
-        DESCRIPTION.
+        backbone model.
+
 
     Returns
     -------
-    None.
+    modeel : nn.Model.
 
     """
     
@@ -37,14 +36,16 @@ def get_model(model_name, output_class=15587)->nn.Module:
     elif model_name == 'efficient':
         model = EfficientNet(model_name='efficientnet_b0', 
                              out_channels= output_class,
-                             embedding_size=2000)
+                             embedding_size=1000)
         #model = timm.create_model('efficientnet_b0', pretrained=True, num_classes=output_class)
-        
+    
+    elif model_name == 'arcface':
+        model = EfficientArcMargin(model_name='efficientnet_b0', out_channels=output_class, embedding_size=1000)
+
     else:        
         print('error model name')
         
-    
-    #summary(model, (3, 244,244))
+
     return model
 
 def get_loss_func(loss_name, cfg):
