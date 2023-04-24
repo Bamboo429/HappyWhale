@@ -27,11 +27,11 @@ Aug:
 Train:
     model: "efficient-b0"
     embedding_size: 1000
-    lr: 0.0001
+    lr: 0.01
     optimizar: "adam"
-    epoch: 2
-    loss_func: "cross entropy"      
-    k_fold: 5
+    epoch: 10
+    loss_func: "cross engropy + argmargin"      
+    k_fold: 2 
     
 
     

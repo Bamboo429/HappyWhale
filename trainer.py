@@ -39,8 +39,10 @@ def get_model(model_name, output_class=15587)->nn.Module:
                              embedding_size=1000)
         #model = timm.create_model('efficientnet_b0', pretrained=True, num_classes=output_class)
     
-    elif model_name == 'arcface':
-        model = EfficientArcMargin(model_name='efficientnet_b0', out_channels=output_class, embedding_size=1000)
+    elif model_name == 'arcmargin':
+        model = EfficientArcMargin(model_name='efficientnet_b0', 
+                                   out_channels=output_class, 
+                                   embedding_size=1000)
 
     else:        
         print('error model name')
@@ -70,8 +72,9 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
     log_interval = 5
     start_time = time.time()
 
-    for idx, (img, label) in enumerate(dataloader):
+    for idx, batch in enumerate(dataloader):
         #print(label)
+        img, label = batch
         label = label.to(device)
         img = img.to(device)
         optimizer.zero_grad()
@@ -82,7 +85,8 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
         # TODO: compute the logits of the input, get the loss, and do the         #
         # gradient backpropagation.
         ###########################################################################
-        logits = model(img)
+        logits = model(batch) #for arcmargin
+        #logits = model(img)
         loss = loss_func(logits, label)
         loss.backward()
         #raise NotImplementedError
@@ -163,7 +167,9 @@ def evaluate(model, dataloader, device):
     total_acc, total_count = 0, 0
 
     with torch.no_grad():
-        for idx, (img, label) in enumerate(dataloader):
+        for idx, batch in enumerate(dataloader):
+            
+            img, label = batch
             label = label.to(device)
             img = img.to(device)
             
@@ -171,7 +177,7 @@ def evaluate(model, dataloader, device):
             ###########################################################################
             # TODO: compute the logits of the input, get the loss.                    #
             ###########################################################################
-            logits = model(img)
+            logits = model(batch)
             #raise NotImplementedError
             ###########################################################################
             #                             END OF YOUR CODE                            #

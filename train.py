@@ -34,7 +34,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # empty memory avoid out-of-memory
 torch.cuda.empty_cache()
 # open configure file
-cfg_filename = 'efficient_crossentropy'
+cfg_filename = 'efficient_arcmargin'
 with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)   
  
@@ -48,7 +48,7 @@ if not os.path.exists(model_folder):
 
 # random seed
 random_seed = cfg['General']['random_seed']
-#random.seed(random_seed)
+random.seed(random_seed)
 
 # data prepare
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
@@ -84,25 +84,33 @@ y = train_df['individual_id']
 for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     
     print('------------fold no---------{}----------------------'.format(fold))
-    train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
-    valid_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
+    #train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
+    #valid_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
      
+    #trainloader = torch.utils.data.DataLoader(
+    #                    training_data, 
+    #                    batch_size=batch_size, sampler=train_subsampler)
+    #validloader = torch.utils.data.DataLoader(
+    #                    training_data,
+    #                    batch_size=batch_size, sampler=valid_subsampler)
+    
     trainloader = torch.utils.data.DataLoader(
                         training_data, 
-                        batch_size=batch_size, sampler=train_subsampler)
+                        batch_size=batch_size)
     validloader = torch.utils.data.DataLoader(
                         training_data,
-                        batch_size=batch_size, sampler=valid_subsampler)
+                        batch_size=batch_size)
+    
     
     # get model init
-    model = get_model("efficient", species_class_num)
+    model = get_model("arcmargin", id_class_num)
     model = model.to(device)
     
     # !!! TODO: write in yaml (after) !!!
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)   
     loss_func = nn.CrossEntropyLoss() #
-    #loss_func = losses.ArcFaceLoss(species_class_num, 1000, margin=0.05, scale = 20) #
+    #loss_func = losses.ArcFaceLoss(id_class_num, 1000, margin=0.05, scale = 20) #
      
     # train and validation
     for epoch in range(1, epochs + 1):
@@ -120,5 +128,7 @@ for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     # save model
     save_path = model_folder+"/fold"+ str(fold)
     torch.save(model.state_dict(), save_path)
+    
+    break
     
 

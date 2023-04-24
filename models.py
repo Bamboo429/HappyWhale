@@ -31,7 +31,8 @@ class CNN_Baseline(nn.Module):
         self.pooling2 = nn.AvgPool2d(kernel_size=(3,3))
         
         self.flatten = nn.Flatten()
-        self.fc = nn.Linear(180, 512)
+        self.fc1 = nn.Linear(74420, 1000)
+        self.fc2 = nn.Linear(1000, 512)
         self.dropout = nn.Dropout()
         self.out = nn.Linear(512, out_channels)
         
@@ -47,7 +48,8 @@ class CNN_Baseline(nn.Module):
         out = self.pooling2(out)
         
         out = self.flatten(out)
-        out = self.fc(out)
+        out = self.fc1(out)
+        out = self.fc2(out)
         out = self.dropout(out)
         
         out = self.out(out)
@@ -71,23 +73,24 @@ class EfficientNet(nn.Module):
     def forward(self, img):
         
         embedding = self.embedding(img)
-        out = self.pooling(embedding).flatten(1)
-        out = self.dropout(out)
-        out = self.dense(out)
-        out = self.fc(out)
-        return F.normalize(out)
+        embedding = self.pooling(embedding).flatten(1)
+        embedding = self.dropout(embedding)
+        embedding = self.dense(embedding)
+        #out = self.fc(embedding)
+        out = embedding
+        return F.normalize(out), embedding
     
 class EfficientArcMargin(nn.Module):
    
     def __init__(self, model_name, out_channels, embedding_size=1000):
         super().__init__()
-        self.embedding = timm.create_model(model_name, pretrained=True, num_classes=0)
-        feature_dims = self.embedding.feature_info.channels()
-        print(f"feature dims: {feature_dims}")
-        
+        self.embedding = timm.create_model(model_name, pretrained=True)
         in_features = self.embedding.classifier.in_features
-        self.embedding.classifier = nn.Identity()
-        self.embedding.global_pool = nn.Identity()
+         
+        #self.embedding.classifier = nn.Identity()
+        #self.embedding.global_pool = nn.Identity()
+        self.embedding.reset_classifier(num_classes=0, global_pool="avg")
+        
         self.arc = ArcMarginProduct(in_features=embedding_size, out_features=out_channels, s=30, m=0.5, easy_margin=False, ls_eps=0)
 
         self.pooling = GeM()
@@ -95,8 +98,12 @@ class EfficientArcMargin(nn.Module):
         self.fc = nn.Linear(embedding_size, out_channels)
         self.dropout = nn.Dropout()
 
-    def forward(self, img, label):
-
+    def forward(self, batch):
+        
+        img, label = batch
+        label = label.to("cuda")
+        img = img.to("cuda")
+        
         embedding = self.embedding(img)
         embedding = self.dense(embedding)
         out = self.arc(embedding, label)

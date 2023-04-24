@@ -29,9 +29,9 @@ Train:
     embedding_size: 1000
     lr: 0.0001
     optimizar: "adam"
-    epoch: 2
-    loss_func: "cross entropy"      
-    k_fold: 5
+    epoch: 10
+    loss_func: "arcface loss"      
+    k_fold: 2 
     
 
     

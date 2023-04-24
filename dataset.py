@@ -82,6 +82,8 @@ class HappyWhaleDataset(Dataset):
         ])
         
         trainfrom_eval = A.Compose([
+            
+            A.Resize(aug_para['img_height'], aug_para['img_weight']),    
             A.Normalize(),
             A.pytorch.transforms.ToTensorV2()
             ])
@@ -99,14 +101,17 @@ class HappyWhaleDataset(Dataset):
         image = self.get_image(index)
         label_id, label_species = self.get_label(index)
         
-        
-        if self.transform and self.phase == 'train':
-            image = self.data_augmentation(image)
+        # !!!! TODO : Modify !!!!!
+        image = self.data_augmentation(image)
+        #if self.transform and self.phase == 'train':
+        #    image = self.data_augmentation(image)
+        #elif self.phase == 'test':
+        #    image = self.data_augmentation(image)
         
             
         
         
-        return image, label_species
+        return image, label_id
         
     def __len__(self):
         return  len(self.df)
@@ -139,6 +144,7 @@ def df_output_encoder(df):
     df.species.replace({"globis": "short_finned_pilot_whale",
                           "pilot_whale": "short_finned_pilot_whale",
                           "kiler_whale": "killer_whale",
+                          #"beluga" : "beluga_whale",
                           "bottlenose_dolpin": "bottlenose_dolphin"}, inplace=True)
 
     species = df['species'] 
