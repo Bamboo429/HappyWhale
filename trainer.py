@@ -97,7 +97,7 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
         torch.nn.utils.clip_grad_norm_(model.parameters(), grad_norm_clip)
         optimizer.step()
         total_acc += (logits.argmax(1) == label).sum().item()
-        total_count += label.size(0)
+        total_count  += label.size(0)
         if idx % log_interval == 0 and idx > 0:
             elapsed = time.time() - start_time
             
@@ -114,7 +114,7 @@ def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip
             
     
             
-    return total_acc, loss
+    return total_acc/total_count, loss
 
 
 def metric_train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip):
@@ -178,6 +178,7 @@ def evaluate(model, dataloader, device):
             # TODO: compute the logits of the input, get the loss.                    #
             ###########################################################################
             logits = model(batch)
+            #logits = model(img)
             #raise NotImplementedError
             ###########################################################################
             #                             END OF YOUR CODE                            #

@@ -25,13 +25,14 @@ Aug:
     img_weight: 380
     
 Train:
-    model: "efficient-b0"
+    model: "baseline"
     embedding_size: 1000
     lr: 0.0001
     optimizar: "adam"
-    epoch: 30
-    loss_func: "cross engropy + argmargin"      
-    k_fold: 2 
+    epoch: 10
+    loss_func: "cross entropy"      
+    k_fold: 2
+    class: 'species'
     
 
     

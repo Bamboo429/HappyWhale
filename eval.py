@@ -10,7 +10,7 @@ import os
 import yaml 
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-
+from sklearn.metrics import precision_score, recall_score
 
 def emb2array(embedding):
     
@@ -29,7 +29,7 @@ def emb2array(embedding):
     return array_emb
 
 
-cfg_filename = 'efficient_arcface'
+cfg_filename = 'baseline_cross2'
 with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)  
    
@@ -44,7 +44,8 @@ train_df = pd.read_csv(train_path)
 test_df = pd.read_csv(test_path)
 
 train_embedding = train_df['embedding'].to_numpy()
-test_embedding = test_df['embedding'].values
+test_embedding = test_df['embedding'].to_numpy()
+
 
 train_embedding = emb2array(train_embedding)
 test_embedding = emb2array(test_embedding)
@@ -60,12 +61,22 @@ for idx, embed_id in enumerate(embed_idxs):
     print(idx)
     pre_id = train_df['individual_id'][embed_id].to_numpy()[np.newaxis, :]
     test_df.loc[idx,column_name] = pre_id
-     
-acc1 = np.sum(test_df['individual_id'] == test_df['pre_id1'])
-acc2 = np.sum(test_df['individual_id'] == test_df['pre_id2'])
-acc3 = np.sum(test_df['individual_id'] == test_df['pre_id3'])
-acc4 = np.sum(test_df['individual_id'] == test_df['pre_id4'])
-acc5 = np.sum(test_df['individual_id'] == test_df['pre_id5'])
+   
+n_id = len(test_df)
+acc1 = np.sum(test_df['individual_id'] == test_df['pre_id1'])/n_id
+acc2 = np.sum(test_df['individual_id'] == test_df['pre_id2'])/n_id
+acc3 = np.sum(test_df['individual_id'] == test_df['pre_id3'])/n_id
+acc4 = np.sum(test_df['individual_id'] == test_df['pre_id4'])/n_id
+acc5 = np.sum(test_df['individual_id'] == test_df['pre_id5'])/n_id
 
-    
+print(acc1, acc2, acc3, acc4, acc5)
+
+n_class = len(test_df)
+acc_species =  np.sum(test_df['out_class'] == test_df['species'])/n_class
+precision = precision_score(test_df['species'], test_df['out_class'], average='macro')
+recall = recall_score(test_df['species'], test_df['out_class'], average='macro')
+
+
+
+
     

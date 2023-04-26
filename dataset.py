@@ -144,7 +144,7 @@ def df_output_encoder(df):
     df.species.replace({"globis": "short_finned_pilot_whale",
                           "pilot_whale": "short_finned_pilot_whale",
                           "kiler_whale": "killer_whale",
-                          #"beluga" : "beluga_whale",
+                          "beluga" : "beluga_whale",
                           "bottlenose_dolpin": "bottlenose_dolphin"}, inplace=True)
 
     species = df['species'] 

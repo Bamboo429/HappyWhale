@@ -34,7 +34,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # empty memory avoid out-of-memory
 torch.cuda.empty_cache()
 # open configure file
-cfg_filename = 'efficient_arcmargin'
+cfg_filename = 'efficient_arcmargin2'
 with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)   
  
@@ -84,23 +84,23 @@ y = train_df['individual_id']
 for fold,(train_idx,test_idx) in enumerate(kfold.split(X, y)):
     
     print('------------fold no---------{}----------------------'.format(fold))
-    #train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
-    #valid_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
+    train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
+    valid_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
      
-    #trainloader = torch.utils.data.DataLoader(
-    #                    training_data, 
-    #                    batch_size=batch_size, sampler=train_subsampler)
-    #validloader = torch.utils.data.DataLoader(
-    #                    training_data,
-    #                    batch_size=batch_size, sampler=valid_subsampler)
-    
+    trainloader = torch.utils.data.DataLoader(
+                        training_data, 
+                        batch_size=batch_size, sampler=train_subsampler)
+    validloader = torch.utils.data.DataLoader(
+                        training_data,
+                        batch_size=batch_size, sampler=valid_subsampler)
+    '''
     trainloader = torch.utils.data.DataLoader(
                         training_data, 
                         batch_size=batch_size)
     validloader = torch.utils.data.DataLoader(
                         training_data,
                         batch_size=batch_size)
-    
+    '''
     
     # get model init
     model = get_model("arcmargin", id_class_num)

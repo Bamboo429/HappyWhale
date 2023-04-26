@@ -76,9 +76,9 @@ class EfficientNet(nn.Module):
         embedding = self.pooling(embedding).flatten(1)
         embedding = self.dropout(embedding)
         embedding = self.dense(embedding)
-        #out = self.fc(embedding)
-        out = embedding
-        return F.normalize(out), embedding
+        out = self.fc(embedding)
+        #out = embedding
+        return F.normalize(out)
     
 class EfficientArcMargin(nn.Module):
    

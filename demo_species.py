@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 20 16:36:39 2023
+Created on Wed Apr 26 16:51:36 2023
 
 @author: tracylin
 """
@@ -18,7 +18,8 @@ import random
 from pytorch_metric_learning import losses
 import numpy as np
 import torch.nn as nn
-
+from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import precision_score, recall_score
 
 from trainer import get_model, train, evaluate, metric_train
 from dataset import df_output_encoder
@@ -30,13 +31,14 @@ assert torch.cuda.is_available()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # empty memory avoid out-of-memory
 torch.cuda.empty_cache()
+
 # open configure file
-cfg_filename = 'efficient_arcmargin'
+cfg_filename = 'baseline_cross2'
 with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)  
    
 # model and tensorboard saving
-writer = SummaryWriter('runs/' + cfg_filename)
+#writer = SummaryWriter('runs/' + cfg_filename)
 model_saving = './model_output/'
 model_folder = os.path.join(model_saving, cfg_filename)
 
@@ -44,8 +46,8 @@ if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 
 # random seed
-random_seed = cfg['General']['random_seed']
-random.seed(random_seed)
+#random_seed = cfg['General']['random_seed']
+#random.seed(random_seed)
 
 # data prepare
 train_pd = pd.read_csv(os.path.join(cfg['Data']['dataset']['data_name']))
@@ -67,69 +69,28 @@ species_class_num = len(pd.unique(train_pd['species']))
 train_dataloader = DataLoader(training_data, batch_size=1, shuffle=False)
 test_dataloader = DataLoader(testing_data, batch_size=1, shuffle=False)
 
-# load model
+# load saved model
 fold = 0
 model_path = model_folder+"/fold"+ str(fold)
-#model_path = '/home/users/tracylin/Documents/CS7150/HappyWhale/model_output/test/epoch1'
-model = get_model("arcmargin", id_class_num)
+model = get_model("baseline", species_class_num)
 model.load_state_dict(torch.load(model_path))
 model.to(device)
 model.eval()
 
-# save the training/testing embeddeed features
-for idx, batch in enumerate(train_dataloader):
-    print(idx)
-    img, label = batch
-    label = label.to(device)
-    img = img.to(device)
-    
-    out_class, embedding = model(batch)
-    #out_class = model(img)
-    train_df.at[idx, 'out_class'] = np.argmax(out_class.numpy(force=True))
-    train_df.at[idx, 'embedding'] = str(embedding.tolist())
-    
-    #if idx>10:
-    #    break
-    
+
 for idx, batch in enumerate(test_dataloader):
     print(idx)
     img, label = batch
     label = label.to(device)
     img = img.to(device)
     
-    out_class, embedding = model(batch)
-    #out_class = model(img)
+    #out_class, embedding = model(batch)
+    out_class = model(img)
     test_df.loc[idx, 'out_class'] = np.argmax(out_class.numpy(force=True))
-    test_df.loc[idx, 'embedding'] = str(embedding.tolist())
-    #if idx>10:
-    #    break
-    
-train_path = model_folder+ '/out_train.csv'
-test_path = model_folder+ '/out_test.csv'
-train_df.to_csv(train_path)
-test_df.to_csv(test_path)
-
-
-
+    #test_df.loc[idx, 'embedding'] = str(embedding.tolist())
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-   
-   
-   
+n_class = len(test_df)
+acc_species =  np.sum(test_df['out_class'] == test_df['species'])/n_class
+precision = precision_score(test_df['species'], test_df['out_class'], average='macro')
+recall = recall_score(test_df['species'], test_df['out_class'], average='macro')
