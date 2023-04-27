@@ -34,7 +34,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # empty memory avoid out-of-memory
 torch.cuda.empty_cache()
 # open configure file
-cfg_filename = 'efficient_arcmargin2'
+cfg_filename = 'efficient_arcmargin5'
 with open('./configs/' + cfg_filename + '.yaml', 'r') as file:
    cfg = yaml.safe_load(file)   
  

@@ -88,8 +88,7 @@ for idx, batch in enumerate(test_dataloader):
     out_class = model(img)
     test_df.loc[idx, 'out_class'] = np.argmax(out_class.numpy(force=True))
     #test_df.loc[idx, 'embedding'] = str(embedding.tolist())
-    
-    
+      
 n_class = len(test_df)
 acc_species =  np.sum(test_df['out_class'] == test_df['species'])/n_class
 precision = precision_score(test_df['species'], test_df['out_class'], average='macro')

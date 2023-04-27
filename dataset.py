@@ -68,9 +68,9 @@ class HappyWhaleDataset(Dataset):
                 p=aug_para['affine'],
             ),
             
-            A.ToGray(p=0.1),
-            A.GaussianBlur(blur_limit=(3, 7), p=0.05),
-            A.GaussNoise(p=0.05),
+            A.ToGray(p=aug_para['gray']),
+            A.GaussianBlur(blur_limit=aug_para['blur_size'], p=aug_para['blur_p']),
+            A.GaussNoise(p=aug_para['noise']),
                 
             A.Resize(aug_para['img_height'], aug_para['img_weight']),    
             
@@ -102,14 +102,7 @@ class HappyWhaleDataset(Dataset):
         label_id, label_species = self.get_label(index)
         
         # !!!! TODO : Modify !!!!!
-        image = self.data_augmentation(image)
-        #if self.transform and self.phase == 'train':
-        #    image = self.data_augmentation(image)
-        #elif self.phase == 'test':
-        #    image = self.data_augmentation(image)
-        
-            
-        
+        image = self.data_augmentation(image)    
         
         return image, label_id
         

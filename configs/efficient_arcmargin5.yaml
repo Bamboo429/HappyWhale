@@ -1,0 +1,47 @@
+
+# Init yaml for HappyWhale
+General:
+    random_seed: 22
+    
+Data:
+    dataset:
+        data_directory: "/drives/hoyi1/users/ivyyen/CS7150_DL_FinalProject/HappyWhale_dataset_precropped/train/"
+        test_directory: "/drives/hoyi1/users/ivyyen/CS7150_DL_FinalProject/HappyWhale_dataset_precropped/test/"
+        
+        submmision_name: "subbmission.csv"
+        data_name: "train_with_split.csv"        
+    dataloader:
+        batch_size: 16
+        num_workers: 1
+        
+        
+Aug:
+    hf: 0.5
+    
+    affine: 0.5
+    rotate: 10
+    translate: 0.5
+    shear: 10
+    
+    gray: 0.1
+    blur_size: (3,7)
+    blur_p: 0.05
+    noise: 0.05
+    
+    img_height: 380
+    img_weight: 380
+    
+Train:
+    model: "efficient-b2"
+    embedding_size: 1000
+    lr: 0.00005
+    optimizar: "adam"
+    epoch: 50
+    loss_func: "cross engropy + argmargin"      
+    k_fold: 2 
+    
+
+    
+    
+    
+        

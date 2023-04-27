@@ -112,10 +112,10 @@ class EfficientArcMargin(nn.Module):
         #out = self.dropout(out)
         #out = self.dense(out)
         #out = self.fc(out)
-        return out
+        return out, embedding
 
 
-    
+# code from https://www.kaggle.com/code/debarshichanda/pytorch-arcface-gem-pooling-starter/notebook
 class GeM(nn.Module):
     def __init__(self, p=3, eps=1e-6):
         super(GeM, self).__init__()

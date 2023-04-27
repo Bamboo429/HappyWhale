@@ -62,10 +62,12 @@ def get_loss_func(loss_name, cfg):
         loss_func = losses.ArcFaceLoss(num_classes, embedding_size)
     else:
         print('no loss function defined')
+        
+    return loss_func
             
     
 
-
+# modify from CS7150 assignment 
 def train(model, dataloader, loss_func, device, optimizer, epoch, grad_norm_clip):
     model.train()
     total_acc, total_count = 0, 0
